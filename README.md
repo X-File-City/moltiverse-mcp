@@ -1,6 +1,6 @@
 # moltiverse-mcp
 
-A unified [Model Context Protocol](https://modelcontextprotocol.io) server that gives AI agents full access to the Moltiverse ecosystem on [Ink](https://inkonchain.com) — Tsunami V3 DEX, Sentry Agent Launch Factory, Tydro lending, NADO perps, Citadel LP Locker, on-chain analytics via Goldsky subgraph, cross-chain bridging/swaps via Relay Protocol, and CEX trading via [Kraken CLI](https://github.com/krakenfx/kraken-cli) (134 commands).
+A unified [Model Context Protocol](https://modelcontextprotocol.io) server that gives AI agents full access to the Moltiverse ecosystem on [Ink](https://inkonchain.com) — Tsunami V3 DEX, Sentry Agent Launch Factory, Tydro lending, NADO perps, Citadel LP Locker, ZNS .ink domain names, on-chain analytics via Goldsky subgraph, cross-chain bridging/swaps via Relay Protocol, and CEX trading via [Kraken CLI](https://github.com/krakenfx/kraken-cli) (134 commands).
 
 ## Quick Start
 
@@ -91,7 +91,7 @@ Read-only tools work without any environment variables.
 
 Public market data and paper trading work without credentials. Install the CLI from [github.com/krakenfx/kraken-cli](https://github.com/krakenfx/kraken-cli).
 
-## Tools (62 on-chain + 134 via Kraken CLI)
+## Tools (68 on-chain + 134 via Kraken CLI)
 
 ### Tsunami V3 DEX (13 tools)
 
@@ -155,6 +155,19 @@ NADO is a perpetuals and spot DEX on Ink powered by the Vertex Protocol engine, 
 | `nado_place_order` | Write | Place a limit or market order (EIP-712 signed) |
 | `nado_cancel_order` | Write | Cancel a specific order by digest |
 | `nado_cancel_all` | Write | Cancel all open orders for a subaccount |
+
+### ZNS Connect — .ink Domains (6 tools)
+
+ZNS Connect is the domain naming service for Ink. Agents can register `.ink` domain names mapped to their EVM addresses for human-readable on-chain identities.
+
+| Tool | Type | Description |
+|---|---|---|
+| `zns_resolve_domain` | Read | Resolve a .ink domain name to its owner wallet address |
+| `zns_resolve_address` | Read | Reverse lookup: find .ink domain(s) owned by a wallet address |
+| `zns_check_domain` | Read | Check whether a .ink domain is available for registration |
+| `zns_get_metadata` | Read | Get metadata for a registered .ink domain (avatar, bio, links) |
+| `zns_get_price` | Read | Get the registration price for one or more .ink domains |
+| `zns_register` | Write | Register one or more .ink domain names to wallet addresses |
 
 ### Citadel LP Locker (9 tools)
 
@@ -251,6 +264,12 @@ kraken mcp -s all --allow-dangerous  # autonomous mode
 |---|---|
 | Endpoint | `0x05ec92D78ED421f3D3Ada77FFdE167106565974E` |
 
+### ZNS Connect
+
+| Contract | Address |
+|---|---|
+| ZNS Registry | `0xFb2Cd41a8aeC89EFBb19575C6c48d872cE97A0A5` |
+
 ### Tokens
 
 | Token | Address |
@@ -264,28 +283,31 @@ kraken mcp -s all --allow-dangerous  # autonomous mode
 ## Architecture
 
 ```
-+--------------------------------------------------------------------------+
-|                        AI Agent (Claude, etc.)                            |
-+-------------------+------------------------------------+-----------------+
-                    | MCP (stdio)                        | MCP (stdio)
-+-------------------v----------------------------------------+ +--v---------+
-|                 moltiverse-mcp (v1.7.0)                      | | kraken mcp |
-|                        62 tools                              | |134 commands|
-|  +-----------+ +-----------+ +-----------+ +-----------+      | | market     |
-|  | Tsunami   | |  Sentry   | |  Tydro    | |   NADO    |      | | account    |
-|  | 13 tools  | |  6 tools  | |  7 tools  | | 11 tools  |      | | trade      |
-|  +-----------+ +-----------+ +-----------+ +-----------+      | | funding    |
-|  | Citadel   | | Subgraph  | |   ERC20   | |   Relay   |      | | earn       |
-|  |  9 tools  | |  6 tools  | |  4 tools  | |  6 tools  |      | | futures    |
-|  +-----+-----+ +-----+-----+ +-----+-----+ +-----+-----+      | | ws  paper  |
-|        |             |             |              |           | +-----+------+
-+--------+-------------+-------------+--------------+-----------+       |
-         |             |             |              |                   |
-    Ink L2 RPC     Goldsky       Ink L2 RPC    NADO APIs          Kraken API
-     (57073)       GraphQL        (57073)     archive +         (spot+futures)
-    Tsunami /      Tsunami       Tydro /      gateway +
-    Sentry /       Subgraph       ERC20       Relay API
-    Citadel                                 (50+ chains)
++------------------------------------------------------------------------------+
+|                          AI Agent (Claude, etc.)                              |
++-------------------+--------------------------------------+-------------------+
+                    | MCP (stdio)                          | MCP (stdio)
++-------------------v------------------------------------------+ +--v---------+
+|                   moltiverse-mcp (v1.8.0)                      | | kraken mcp |
+|                          68 tools                              | |134 commands|
+|  +-----------+ +-----------+ +-----------+ +-----------+        | | market     |
+|  | Tsunami   | |  Sentry   | |  Tydro    | |   NADO    |        | | account    |
+|  | 13 tools  | |  6 tools  | |  7 tools  | | 11 tools  |        | | trade      |
+|  +-----------+ +-----------+ +-----------+ +-----------+        | | funding    |
+|  | Citadel   | | Subgraph  | |   ERC20   | |   Relay   |        | | earn       |
+|  |  9 tools  | |  6 tools  | |  4 tools  | |  6 tools  |        | | futures    |
+|  +-----------+ +-----------+ +-----------+ +-----------+        | | ws  paper  |
+|  |    ZNS    |                                                  | +-----+------+
+|  |  6 tools  |                                                  |       |
+|  +-----+-----+                                                  |       |
++--------------------------------------------------------------------------+   |
+         |             |              |              |                    |
+    Ink L2 RPC     Goldsky        Ink L2 RPC    NADO APIs           Kraken API
+     (57073)       GraphQL         (57073)     archive +          (spot+futures)
+    Tsunami /      Tsunami        Tydro /      gateway +
+    Sentry /       Subgraph        ERC20       Relay API
+    Citadel /                                (50+ chains)
+    ZNS
 ```
 
 ## Documentation
@@ -296,6 +318,7 @@ kraken mcp -s all --allow-dangerous  # autonomous mode
 - [Relay Protocol](docs/relay-protocol.md)
 - [Tydro Lending Protocol](docs/tydro-lending.md)
 - [NADO Perps DEX](docs/nado-perps-dex.md)
+- [ZNS Connect — .ink Domains](docs/zns-names.md)
 
 ## Agent Skills
 
@@ -309,6 +332,7 @@ Step-by-step playbooks for common agent workflows — multi-step sequences, para
 - [Relay Skills](docs/skills/relay-skills.md) — Bridging, acquiring USDT0 for NAMI purchases
 - [ERC-20 Skills](docs/skills/erc20-skills.md) — Balances, approvals, native ETH transfers
 - [Subgraph Skills](docs/skills/subgraph-skills.md) — Analytics, pool discovery, position tracking
+- [ZNS Skills](docs/skills/zns-skills.md) — Registering .ink domains, resolving names, sending tokens to domains
 
 ## License
 
