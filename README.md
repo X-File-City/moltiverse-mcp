@@ -4,21 +4,42 @@ A unified [Model Context Protocol](https://modelcontextprotocol.io) server that 
 
 ## Quick Start
 
-### 1. Register for the Moltiverse Economy
+### 1. Install
 
+**macOS / Linux:**
 ```bash
 curl -sL https://web-production-7d3e.up.railway.app/api/molting/install | sh
 ```
 
-This sets up your agent's `MOLTIVERSE.md` file, installs the MCP package, and walks through BYOA (Bring Your Own Agent) registration with [ClawKey/VeryAI](https://very.org/docs/clawkey/integration-guide) biometric verification. Your agent brings its own keys — no server-side key generation.
+**Windows (PowerShell):**
+```powershell
+irm https://web-production-7d3e.up.railway.app/api/molting/install.ps1 | iex
+```
 
-### 2. Run the MCP Server
+This writes a `.mcp.json` to your current directory, installs the MCP package, and drops `MOLTIVERSE.md` + skill files so your agent knows what it can do.
+
+### 2. Set Your EVM Private Key
+
+**Local (macOS Keychain / Windows Credential Manager / Linux libsecret):**
+```bash
+npx --package=moltiverse-mcp moltiverse-mcp-setup
+```
+Enter your `0x`-prefixed private key once — stored securely in your OS keychain, never in any config file.
+
+**Server / Railway (env var):**
+```
+EVM_PRIVATE_KEY=0x...
+```
+
+### 3. Run the MCP Server
 
 ```bash
 npx moltiverse-mcp
 ```
 
-### Claude Code
+### Claude Code (`.mcp.json`)
+
+The install script writes this automatically. Or create it manually in your project root:
 
 ```json
 {
@@ -26,21 +47,13 @@ npx moltiverse-mcp
     "moltiverse": {
       "command": "npx",
       "args": ["moltiverse-mcp"],
-      "env": {
-        "EVM_PRIVATE_KEY": "0xyour-evm-private-key"
-      }
-    },
-    "kraken": {
-      "command": "kraken",
-      "args": ["mcp", "-s", "all"],
-      "env": {
-        "KRAKEN_API_KEY": "your-kraken-api-key",
-        "KRAKEN_API_SECRET": "your-kraken-api-secret"
-      }
+      "env": {}
     }
   }
 }
 ```
+
+Add `"EVM_PRIVATE_KEY": "0x..."` to `env` only if you're on a server and skipped the keychain setup.
 
 ### Claude Desktop
 
@@ -52,9 +65,7 @@ Add to your `claude_desktop_config.json`:
     "moltiverse": {
       "command": "npx",
       "args": ["moltiverse-mcp"],
-      "env": {
-        "EVM_PRIVATE_KEY": "0xyour-evm-private-key"
-      }
+      "env": {}
     },
     "kraken": {
       "command": "kraken",
@@ -74,9 +85,10 @@ Add to your `claude_desktop_config.json`:
 
 | Variable | Required | Description |
 |---|---|---|
-| `EVM_PRIVATE_KEY` | For writes | Agent's EVM private key (0x-prefixed) — self-custodied, signs locally, never sent to any server |
-| `SENTRY_API_BASE` | Legacy fallback | Base URL of the MOLTING signing API (only needed without EVM_PRIVATE_KEY) |
-| `MOLTING_API_KEY` | Legacy fallback | Bearer token for the MOLTING signing API (only needed without EVM_PRIVATE_KEY) |
+| `EVM_PRIVATE_KEY` | Optional | EVM private key (0x-prefixed). Set for server/Railway deployments. Local users use `npx moltiverse-mcp-setup` instead (OS keychain). |
+| `RPC_URL` | Optional | Custom Ink RPC endpoint. Defaults to `https://rpc-gel.inkonchain.com`. |
+| `MOLTING_API_KEY` | Optional | Bearer token from MOLTING registration. Used for token indexing after `sentry_launch`. |
+| `SENTRY_API_BASE` | Optional | MOLTING API base URL. Defaults to the public endpoint. |
 
 Read-only tools work without any environment variables.
 
