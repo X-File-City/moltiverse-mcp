@@ -11,7 +11,7 @@ const ZNS_ABI = [
   {
     name: 'priceToRegister',
     type: 'function',
-    inputs: [{ name: 'length', type: 'uint256' }],
+    inputs: [{ name: 'len', type: 'uint16' }],
     outputs: [{ name: '', type: 'uint256' }],
     stateMutability: 'view',
   },
@@ -164,7 +164,7 @@ export async function handleZnsTool(name: string, args: Record<string, unknown>)
             address: ZNS_REGISTRY,
             abi: ZNS_ABI,
             functionName: 'priceToRegister',
-            args: [BigInt(d.length)],
+            args: [d.length],
           })
         )
       );
@@ -193,7 +193,7 @@ export async function handleZnsTool(name: string, args: Record<string, unknown>)
             address: ZNS_REGISTRY,
             abi: ZNS_ABI,
             functionName: 'priceToRegister',
-            args: [BigInt(d.length)],
+            args: [d.length],
           })
         )
       );
