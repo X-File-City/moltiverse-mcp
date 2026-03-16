@@ -16,6 +16,7 @@ import { tsunamiTools, handleTsunamiTool } from './tools/tsunami.js';
 import { relayTools, handleRelayTool } from './tools/relay.js';
 import { tydroTools, handleTydroTool } from './tools/tydro.js';
 import { nadoTools, handleNadoTool } from './tools/nado.js';
+import { znsTools, handleZnsTool } from './tools/zns.js';
 
 // ── All Tools ──────────────────────────────────────────────────────────
 const allTools = [
@@ -27,6 +28,7 @@ const allTools = [
   ...relayTools,
   ...tydroTools,
   ...nadoTools,
+  ...znsTools,
 ];
 
 // ── Route tool calls ───────────────────────────────────────────────────
@@ -39,12 +41,13 @@ async function handleToolCall(name: string, args: Record<string, unknown>): Prom
   if (name.startsWith('relay_'))    return handleRelayTool(name, args);
   if (name.startsWith('tydro_'))    return handleTydroTool(name, args);
   if (name.startsWith('nado_'))     return handleNadoTool(name, args);
+  if (name.startsWith('zns_'))      return handleZnsTool(name, args);
   throw new Error(`Unknown tool: ${name}`);
 }
 
 // ── Server Setup ───────────────────────────────────────────────────────
 const server = new Server(
-  { name: 'moltiverse-agent-economy-mcp', version: '1.6.0' },
+  { name: 'moltiverse-mcp', version: '1.8.0' },
   { capabilities: { tools: {} } },
 );
 
@@ -72,7 +75,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error(`Moltiverse Agent Economy MCP v1.6.0 — ${allTools.length} tools registered`);
+  console.error(`moltiverse-mcp v1.8.0 — ${allTools.length} tools registered`);
 }
 
 main().catch((err) => {
