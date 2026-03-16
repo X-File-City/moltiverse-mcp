@@ -6,7 +6,7 @@ export const ink = defineChain({
   name: 'Ink',
   nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
   rpcUrls: {
-    default: { http: ['https://rpc-gel.inkonchain.com'] },
+    default: { http: [process.env.RPC_URL ?? 'https://rpc-gel.inkonchain.com'] },
   },
   blockExplorers: {
     default: { name: 'Ink Explorer', url: 'https://explorer.inkonchain.com' },

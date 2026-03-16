@@ -3,6 +3,12 @@ const ACCOUNT = 'evm-private-key';
 
 let _cached: string | null | undefined = undefined;
 
+// keytar is a CJS module; dynamic import wraps it under .default in ESM
+async function loadKeytar() {
+  const mod = await import('keytar');
+  return (mod as unknown as { default: typeof mod }).default ?? mod;
+}
+
 /**
  * Get the EVM private key. Priority:
  * 1. EVM_PRIVATE_KEY env var (allows override / server deployments)
@@ -17,7 +23,7 @@ export async function getPrivateKey(): Promise<string | null> {
   }
 
   try {
-    const keytar = await import('keytar');
+    const keytar = await loadKeytar();
     _cached = await keytar.getPassword(SERVICE, ACCOUNT);
   } catch {
     _cached = null;
@@ -27,11 +33,11 @@ export async function getPrivateKey(): Promise<string | null> {
 }
 
 export async function storePrivateKey(key: string): Promise<void> {
-  const keytar = await import('keytar');
+  const keytar = await loadKeytar();
   await keytar.setPassword(SERVICE, ACCOUNT, key);
 }
 
 export async function deletePrivateKey(): Promise<void> {
-  const keytar = await import('keytar');
+  const keytar = await loadKeytar();
   await keytar.deletePassword(SERVICE, ACCOUNT);
 }
