@@ -224,7 +224,6 @@ async function signOrder(params: {
         { name: 'amount', type: 'int128' },
         { name: 'expiration', type: 'uint64' },
         { name: 'nonce', type: 'uint64' },
-        { name: 'appendix', type: 'uint128' },
       ],
     },
     primaryType: 'Order',
@@ -234,7 +233,6 @@ async function signOrder(params: {
       amount: amountX18,
       expiration: expiration,
       nonce: nonce,
-      appendix: appendix,
     },
   });
 
