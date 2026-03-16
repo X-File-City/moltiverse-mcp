@@ -138,11 +138,11 @@ async function signOrder(params: {
   productId: number;
   price: number;           // 0 for market orders (use large expiration for IOC)
   amount: number;          // positive = buy, negative = sell
-  expirationMs?: number;   // default: 60 seconds from now; use large value for GTC
+  expiration: bigint;      // already-encoded expiration bits (includes TIF flags in upper 2 bits)
   subaccount: string;      // 32-byte hex subaccount
   privateKey: string;
 }): Promise<{ order: Record<string, string>; signature: string }> {
-  const expiration = BigInt(params.expirationMs ?? (Date.now() + 60_000));
+  const expiration = params.expiration;
   const nonce = getNonce();
   const priceX18 = toX18(params.price);
   // amount in x18 (positive=long/buy, negative=short/sell)
@@ -541,11 +541,16 @@ export async function handleNadoTool(name: string, args: Record<string, unknown>
         expirationBits = BigInt(nowSec + 365 * 86400);
       }
 
+      // For market orders (price=0), use extreme limit prices so the order fills immediately
+      const orderPrice = price > 0 ? price
+        : tif === 'GTC' ? (amount > 0 ? 999999999 : 0.000001)
+        : (amount > 0 ? 999999999 : 0.000001); // IOC/FOK market orders also need a price
+
       const { order, signature } = await signOrder({
         productId,
-        price: price > 0 ? price : (tif === 'GTC' ? (amount > 0 ? 999999999 : 0.000001) : 0),
+        price: orderPrice,
         amount,
-        expirationMs: Number(expirationBits) * 1000,
+        expiration: expirationBits,  // pass BigInt directly — avoids precision loss via Number()
         subaccount,
         privateKey: pk,
       });
@@ -553,7 +558,7 @@ export async function handleNadoTool(name: string, args: Record<string, unknown>
       const result = await gatewayExecute({
         place_order: {
           product_id: productId,
-          order: { ...order, expiration: expirationBits.toString() },
+          order,  // expiration already set correctly inside signOrder
           signature,
         },
       });
