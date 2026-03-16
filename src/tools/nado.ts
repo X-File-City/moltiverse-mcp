@@ -185,12 +185,11 @@ function getNonce(): bigint {
 
 async function signOrder(params: {
   productId: number;
-  price: number;           // 0 for market orders (use large expiration for IOC)
+  price: number;
   amount: number;          // positive = buy, negative = sell
-  expiration: bigint;      // already-encoded expiration bits (includes TIF flags in upper 2 bits)
+  expiration: bigint;      // already-encoded expiration bits (TIF flags in upper 2 bits)
   subaccount: string;      // 32-byte hex subaccount
   privateKey: string;
-  tif: string;             // GTC | IOC | FOK — affects verifyingContract
 }): Promise<{ order: Record<string, string>; signature: string }> {
   const expiration = params.expiration;
   const nonce = getNonce();
@@ -209,20 +208,14 @@ async function signOrder(params: {
     appendix: appendix.toString(),
   };
 
-  // EIP-712: GTC orders use the product address as verifyingContract (on-chain sequencer path);
-  // IOC/FOK use ENDPOINT (off-chain engine path)
-  const isImmediate = params.tif === 'IOC' || params.tif === 'FOK';
-  const verifyingContract = isImmediate
-    ? ENDPOINT as Address
-    : `0x${params.productId.toString(16).padStart(40, '0')}` as Address;
-
+  // EIP-712: ENDPOINT as verifyingContract for all NADO orders
   const signature = await signTypedData({
     privateKey: params.privateKey as `0x${string}`,
     domain: {
       name: 'Vertex',
       version: '0.0.1',
       chainId: CHAIN_ID,
-      verifyingContract,
+      verifyingContract: ENDPOINT as Address,
     },
     types: {
       Order: [
@@ -636,7 +629,6 @@ export async function handleNadoTool(name: string, args: Record<string, unknown>
         expiration: expirationBits,
         subaccount,
         privateKey: pk,
-        tif,
       });
 
       const result = await gatewayExecute({
