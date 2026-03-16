@@ -851,7 +851,14 @@ export async function handleNadoTool(name: string, args: Record<string, unknown>
       if (productId === undefined) throw new Error(`Cannot resolve productId for ${tokenArg}`);
 
       const amountRaw = BigInt(Math.round(amount * 10 ** tokenInfo.decimals));
-      const nonce = getOrderNonce();
+
+      // Withdrawals use sequential nonces (not order-style recv_time nonces)
+      // Fetch current nonce from archive API
+      let nonce = 0n;
+      try {
+        const nonceData = await archiveQuery({ nonces: { address: subaccount } }) as { tx_nonce?: string | number };
+        nonce = BigInt(nonceData?.tx_nonce ?? 0);
+      } catch { /* default to 0 if query fails */ }
 
       // Sign WithdrawCollateral via EIP-712 (NADO domain, ENDPOINT as verifyingContract)
       const signature = await signTypedData({
