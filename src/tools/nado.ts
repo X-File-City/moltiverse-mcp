@@ -634,8 +634,8 @@ export async function handleNadoTool(name: string, args: Record<string, unknown>
       const result = await gatewayExecute({
         place_order: {
           product_id: productId,
-          // appendix v1 format: upper 64 bits = version (1), lower 64 bits = recv_time deadline in ms
-          order: { ...order, appendix: ((1n << 64n) | (BigInt(Date.now()) + 30000n)).toString() },
+          // appendix v1 format: LSB = version byte (1), upper bits = recv_time deadline in seconds
+          order: { ...order, appendix: ((BigInt(Math.floor(Date.now() / 1000) + 60) << 8n) | 1n).toString() },
           signature,
         },
       });
