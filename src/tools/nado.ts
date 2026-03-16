@@ -190,14 +190,15 @@ async function signOrder(params: {
   expiration: bigint;      // already-encoded expiration bits (includes TIF flags in upper 2 bits)
   subaccount: string;      // 32-byte hex subaccount
   privateKey: string;
+  tif: string;             // GTC | IOC | FOK — affects verifyingContract
 }): Promise<{ order: Record<string, string>; signature: string }> {
   const expiration = params.expiration;
   const nonce = getNonce();
   const priceX18 = toX18(params.price);
   const amountX18 = toX18(params.amount);
 
-  // appendix v1: LSB = version byte (1), upper bits = recv_time deadline in milliseconds
-  const appendix = (BigInt(Date.now() + 60_000) << 8n) | 1n;
+  // appendix v1: LSB = version byte (1), upper bits = recv_time deadline in ms (5 min window)
+  const appendix = (BigInt(Date.now() + 300_000) << 8n) | 1n;
 
   const order = {
     sender: params.subaccount as `0x${string}`,
@@ -208,14 +209,20 @@ async function signOrder(params: {
     appendix: appendix.toString(),
   };
 
-  // EIP-712: verifyingContract is the ENDPOINT for all NADO orders
+  // EIP-712: GTC orders use the product address as verifyingContract (on-chain sequencer path);
+  // IOC/FOK use ENDPOINT (off-chain engine path)
+  const isImmediate = params.tif === 'IOC' || params.tif === 'FOK';
+  const verifyingContract = isImmediate
+    ? ENDPOINT as Address
+    : `0x${params.productId.toString(16).padStart(40, '0')}` as Address;
+
   const signature = await signTypedData({
     privateKey: params.privateKey as `0x${string}`,
     domain: {
       name: 'Vertex',
       version: '0.0.1',
       chainId: CHAIN_ID,
-      verifyingContract: ENDPOINT as Address,
+      verifyingContract,
     },
     types: {
       Order: [
@@ -626,9 +633,10 @@ export async function handleNadoTool(name: string, args: Record<string, unknown>
         productId,
         price: orderPrice,
         amount,
-        expiration: expirationBits,  // pass BigInt directly — avoids precision loss via Number()
+        expiration: expirationBits,
         subaccount,
         privateKey: pk,
+        tif,
       });
 
       const result = await gatewayExecute({
