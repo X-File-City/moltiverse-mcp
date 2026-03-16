@@ -135,7 +135,7 @@ export async function handleZnsTool(name: string, args: Record<string, unknown>)
         ? ownerArg
         : domains.map(() => defaultOwner);
 
-      const walletClient = getWalletClient();
+      const walletClient = await getWalletClient();
       const result = await ZNSConnect.register(walletClient, domains, owners, TLD);
       return {
         domains: domains.map(d => `${d}.${TLD}`),

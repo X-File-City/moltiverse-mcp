@@ -51,7 +51,7 @@ async function ensureAllowance(asset: Address, spender: Address, amount: bigint,
     address: asset, abi: TYDRO_ERC20_ABI, functionName: 'allowance', args: [owner, spender],
   });
   if ((allowance as bigint) >= amount) return;
-  const wc = getWalletClient();
+  const wc = await getWalletClient();
   const hash = await wc.writeContract({
     address: asset, abi: TYDRO_ERC20_ABI, functionName: 'approve', args: [spender, maxUint256],
   });
@@ -204,7 +204,7 @@ export async function handleTydroTool(name: string, args: Record<string, unknown
       const amount = parseAmount(args.amount as string, decimals);
       const owner = await getAccount();
       await ensureAllowance(assetAddr, TYDRO_POOL, amount, owner);
-      const wc = getWalletClient();
+      const wc = await getWalletClient();
       const hash = await wc.writeContract({
         address: TYDRO_POOL, abi: TYDRO_POOL_ABI, functionName: 'supply', args: [assetAddr, amount, owner, 0],
       });
@@ -216,7 +216,7 @@ export async function handleTydroTool(name: string, args: Record<string, unknown
       const { address: assetAddr, decimals } = resolveAsset(args.asset as string);
       const amount = parseAmount(args.amount as string, decimals);
       const owner = await getAccount();
-      const wc = getWalletClient();
+      const wc = await getWalletClient();
       const hash = await wc.writeContract({
         address: TYDRO_POOL, abi: TYDRO_POOL_ABI, functionName: 'borrow', args: [assetAddr, amount, 2n, 0, owner],
       });
@@ -229,7 +229,7 @@ export async function handleTydroTool(name: string, args: Record<string, unknown
       const amount = args.amount === 'max' ? maxUint256 : parseAmount(args.amount as string, decimals);
       const owner = await getAccount();
       await ensureAllowance(assetAddr, TYDRO_POOL, amount, owner);
-      const wc = getWalletClient();
+      const wc = await getWalletClient();
       const hash = await wc.writeContract({
         address: TYDRO_POOL, abi: TYDRO_POOL_ABI, functionName: 'repay', args: [assetAddr, amount, 2n, owner],
       });
@@ -241,7 +241,7 @@ export async function handleTydroTool(name: string, args: Record<string, unknown
       const { address: assetAddr, decimals } = resolveAsset(args.asset as string);
       const amount = args.amount === 'max' ? maxUint256 : parseAmount(args.amount as string, decimals);
       const owner = await getAccount();
-      const wc = getWalletClient();
+      const wc = await getWalletClient();
       const hash = await wc.writeContract({
         address: TYDRO_POOL, abi: TYDRO_POOL_ABI, functionName: 'withdraw', args: [assetAddr, amount, owner],
       });

@@ -7,6 +7,7 @@ import {
 } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { ink } from './config.js';
+import { getPrivateKey } from './keychain.js';
 
 // ── Public Client (always available) ──────────────────────────────────
 export const publicClient = createPublicClient({
@@ -14,18 +15,18 @@ export const publicClient = createPublicClient({
   transport: http(),
 });
 
-// ── Wallet Client (BYOA: local signing via EVM_PRIVATE_KEY) ───────────
-export function getWalletClient() {
-  const pk = process.env.EVM_PRIVATE_KEY;
-  if (!pk) throw new Error('EVM_PRIVATE_KEY is required for write operations');
+// ── Wallet Client (BYOA: local signing via keychain or EVM_PRIVATE_KEY) ──
+export async function getWalletClient() {
+  const pk = await getPrivateKey();
+  if (!pk) throw new Error('No EVM private key found. Run: npx moltiverse-mcp-setup');
   const account = privateKeyToAccount(pk as `0x${string}`);
   return createWalletClient({ account, chain: ink, transport: http() });
 }
 
 // ── Agent Account ──────────────────────────────────────────────────────
 export async function getAccount(): Promise<Address> {
-  // BYOA: derive from local private key
-  const pk = process.env.EVM_PRIVATE_KEY;
+  // BYOA: derive from local private key (keychain or env var)
+  const pk = await getPrivateKey();
   if (pk) {
     return privateKeyToAccount(pk as `0x${string}`).address;
   }
@@ -52,11 +53,11 @@ export async function sendTx(params: {
   data: `0x${string}`;
   value?: bigint;
 }): Promise<{ hash: Hash }> {
-  const pk = process.env.EVM_PRIVATE_KEY;
+  const pk = await getPrivateKey();
 
   if (pk) {
     // BYOA: sign and broadcast locally
-    const wc = getWalletClient();
+    const wc = await getWalletClient();
     const hash = await wc.sendTransaction({
       to: params.to,
       data: params.data,
