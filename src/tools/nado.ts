@@ -37,13 +37,10 @@ const ENDPOINT_ABI = [
     stateMutability: 'nonpayable',
   },
   {
-    name: 'withdrawCollateral',
+    name: 'submitSlowModeTransaction',
     type: 'function',
     inputs: [
-      { name: 'subaccountName', type: 'bytes12' },
-      { name: 'productId', type: 'uint32' },
-      { name: 'amount', type: 'uint128' },
-      { name: 'sendTo', type: 'address' },
+      { name: 'transaction', type: 'bytes' },
     ],
     outputs: [],
     stateMutability: 'nonpayable',
@@ -832,7 +829,9 @@ export async function handleNadoTool(name: string, args: Record<string, unknown>
     }
 
     case 'nado_withdraw': {
-      // NADO withdrawals go through the gateway as a signed message (not direct contract call)
+      // NADO withdrawals use slow-mode on-chain transactions (not gateway)
+      // Docs: https://docs.nado.xyz/developer-resources/api/withdrawing-on-chain
+      // Requires 1 USDT0 approval for the slow-mode fee
       const pk = process.env.EVM_PRIVATE_KEY;
       if (!pk) throw new Error('EVM_PRIVATE_KEY required');
       const account = privateKeyToAccount(pk as `0x${string}`);
@@ -851,54 +850,35 @@ export async function handleNadoTool(name: string, args: Record<string, unknown>
       if (productId === undefined) throw new Error(`Cannot resolve productId for ${tokenArg}`);
 
       const amountRaw = BigInt(Math.round(amount * 10 ** tokenInfo.decimals));
+      const wc = await getWalletClient();
 
-      // Withdrawals use sequential nonces (not order-style recv_time nonces)
-      // Fetch current nonce from archive API
-      let nonce = 0n;
-      try {
-        const nonceData = await archiveQuery({ nonces: { address: subaccount } }) as { tx_nonce?: string | number };
-        nonce = BigInt(nonceData?.tx_nonce ?? 0);
-      } catch { /* default to 0 if query fails */ }
-
-      // Sign WithdrawCollateral via EIP-712 (NADO domain, ENDPOINT as verifyingContract)
-      const signature = await signTypedData({
-        privateKey: pk as `0x${string}`,
-        domain: {
-          name: 'Nado',
-          version: '0.0.1',
-          chainId: CHAIN_ID,
-          verifyingContract: ENDPOINT as Address,
-        },
-        types: {
-          WithdrawCollateral: [
-            { name: 'sender', type: 'bytes32' },
-            { name: 'productId', type: 'uint32' },
-            { name: 'amount', type: 'uint128' },
-            { name: 'nonce', type: 'uint64' },
-          ],
-        },
-        primaryType: 'WithdrawCollateral',
-        message: {
-          sender: subaccount as `0x${string}`,
-          productId: parseInt(productId),
-          amount: amountRaw,
-          nonce,
-        },
+      // Approve 1 USDT0 for slow-mode fee
+      const usdt0 = SPOT_TOKENS[0];
+      const feeApproveHash = await wc.writeContract({
+        address: usdt0.address, abi: ERC20_APPROVE_ABI,
+        functionName: 'approve', args: [ENDPOINT as Address, BigInt(1e6)], // 1 USDT0 = 1e6
+        account,
       });
+      await publicClient.waitForTransactionReceipt({ hash: feeApproveHash });
 
-      const result = await gatewayExecute({
-        withdraw_collateral: {
-          tx: {
-            sender: subaccount,
-            productId: parseInt(productId),
-            amount: amountRaw.toString(),
-            nonce: nonce.toString(),
-          },
-          signature,
-        },
+      // Encode WithdrawCollateral struct: { sender: bytes32, productId: uint32, amount: uint128, nonce: uint64 }
+      // Then pack as: abi.encodePacked(uint8(2), abi.encode(struct))
+      const encodedStruct = encodeAbiParameters(
+        parseAbiParameters('bytes32, uint32, uint128, uint64'),
+        [subaccount as `0x${string}`, parseInt(productId), amountRaw, 0n],
+      );
+      // Transaction type 2 = WithdrawCollateral, packed as single byte prefix
+      const slowModeTx = encodePacked(['uint8', 'bytes'], [2, encodedStruct]);
+
+      const hash = await wc.writeContract({
+        address: ENDPOINT as Address, abi: ENDPOINT_ABI,
+        functionName: 'submitSlowModeTransaction',
+        args: [slowModeTx],
+        account,
       });
+      await publicClient.waitForTransactionReceipt({ hash });
 
-      return { token: tokenInfo.symbol, amount, subaccount: subName, result };
+      return { token: tokenInfo.symbol, amount, subaccount: subName, txHash: hash, note: 'Slow-mode withdrawal submitted. 1 USDT0 fee charged. Processing takes a few seconds.' };
     }
 
     default:
