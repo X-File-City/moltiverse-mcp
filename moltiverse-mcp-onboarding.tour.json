@@ -14,7 +14,7 @@
     {
       "id": "core-infrastructure",
       "title": "Core Infrastructure — Server, Client & Config",
-      "description": "The server backbone lives in three files. index.ts is the MCP entry point — it registers all 68 tools and dispatches calls by protocol prefix (e.g. tsunami_, nado_). client.ts provides Viem blockchain clients (read + write), account resolution from OS keychain or env vars, and transaction broadcasting. config.ts holds the Ink chain definition (chainId 57073), contract addresses, and constants like fee tiers and slippage defaults.",
+      "description": "The server backbone lives in three files. index.ts is the MCP entry point — it registers all 68 tools and dispatches calls by protocol prefix. client.ts provides Viem blockchain clients (read + write), account resolution from OS keychain or env vars, and transaction broadcasting. config.ts holds the Ink chain definition (chainId 57073), contract addresses, and constants like fee tiers and slippage defaults.",
       "focusDirectory": "src",
       "colorMode": "fileTypes",
       "highlightLayers": [
