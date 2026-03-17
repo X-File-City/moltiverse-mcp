@@ -55,7 +55,7 @@
     {
       "id": "tools-overview",
       "title": "The Tools Directory — 9 Protocols, 68 Tools",
-      "description": "Every protocol gets its own file in src/tools/. Each file exports a tools array (definitions with name, description, input schema) and a handler function that routes calls to implementations. Tool names follow the pattern {protocol}_{action} — e.g. tsunami_swap_exact_input or tydro_supply. The dispatcher in index.ts matches by prefix and delegates to the right handler.",
+      "description": "Every protocol gets its own file in src/tools/. Each file exports a tools array (definitions with name, description, input schema) and a handler function that routes calls to implementations. The dispatcher in index.ts matches tool names by protocol prefix and delegates to the right handler.",
       "focusDirectory": "src/tools",
       "colorMode": "fileTypes",
       "highlightLayers": [
