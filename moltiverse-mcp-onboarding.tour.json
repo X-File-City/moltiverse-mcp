@@ -126,7 +126,7 @@
     {
       "id": "nado-complexity",
       "title": "NADO Perps — The Most Complex Protocol",
-      "description": "NADO is a perpetuals exchange built on Vertex Protocol, offering up to 20x leverage. It's the most complex tool file because orders use EIP-712 signing (not standard transactions), it has a dual-API architecture (Archive for reads, Gateway for writes), and handles subaccounts, product IDs, sequential nonces, and slow-mode withdrawals. Recent fixes (v1.9.1–v1.9.3) addressed nonce formats, deadline precision, and withdrawal modes — showing how protocol-specific edge cases drive development.",
+      "description": "NADO is a perpetuals exchange built on Vertex Protocol, offering up to 20x leverage. It's the most complex tool file because orders use EIP-712 signing (not standard transactions), it has a dual-API architecture (Archive for reads, Gateway for writes), and handles subaccounts, product IDs, sequential nonces, and slow-mode withdrawals. Recent fixes addressed nonce formats, deadline precision, and withdrawal modes — showing how protocol-specific edge cases drive development.",
       "focusDirectory": "src/tools",
       "colorMode": "fileTypes",
       "highlightLayers": [
