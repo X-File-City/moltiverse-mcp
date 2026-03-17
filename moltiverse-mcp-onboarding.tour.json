@@ -1,0 +1,268 @@
+{
+  "id": "moltiverse-mcp-onboarding",
+  "title": "Moltiverse MCP — Unified DeFi Agent Server",
+  "description": "A guided tour of the Moltiverse MCP server: 68 on-chain tools across 9 DeFi protocols on Ink L2, built for AI agents via the Model Context Protocol.",
+  "version": "1.0.0",
+  "steps": [
+    {
+      "id": "overview",
+      "title": "Welcome to Moltiverse MCP",
+      "description": "Moltiverse MCP is a unified Model Context Protocol server that gives AI agents full access to the Moltiverse DeFi ecosystem on the Ink L2 blockchain. It exposes 68 on-chain tools across 9 protocols — from DEX trading and lending to token launches and cross-chain bridges. The codebase is compact and well-organized: source code in src/, protocol docs in docs/, and everything compiles to a single Node.js entry point.",
+      "focusDirectory": "",
+      "colorMode": "fileTypes"
+    },
+    {
+      "id": "core-infrastructure",
+      "title": "Core Infrastructure — Server, Client & Config",
+      "description": "The server backbone lives in three files. index.ts is the MCP entry point — it registers all 68 tools and dispatches calls by protocol prefix (e.g. tsunami_, nado_). client.ts provides Viem blockchain clients (read + write), account resolution from OS keychain or env vars, and transaction broadcasting. config.ts holds the Ink chain definition (chainId 57073), contract addresses, and constants like fee tiers and slippage defaults.",
+      "focusDirectory": "src",
+      "colorMode": "fileTypes",
+      "highlightLayers": [
+        {
+          "id": "server-entry",
+          "name": "MCP Server Entry Point",
+          "color": "#f59e0b",
+          "items": [
+            { "path": "src/index.ts", "type": "file" }
+          ],
+          "opacity": 0.8,
+          "renderStrategy": "border"
+        },
+        {
+          "id": "client-config",
+          "name": "Client & Config Layer",
+          "color": "#3b82f6",
+          "items": [
+            { "path": "src/client.ts", "type": "file" },
+            { "path": "src/config.ts", "type": "file" }
+          ],
+          "opacity": 0.7,
+          "renderStrategy": "border"
+        },
+        {
+          "id": "key-management",
+          "name": "Key Management",
+          "color": "#10b981",
+          "items": [
+            { "path": "src/keychain.ts", "type": "file" },
+            { "path": "src/setup.ts", "type": "file" }
+          ],
+          "opacity": 0.7,
+          "renderStrategy": "border"
+        }
+      ]
+    },
+    {
+      "id": "tools-overview",
+      "title": "The Tools Directory — 9 Protocols, 68 Tools",
+      "description": "Every protocol gets its own file in src/tools/. Each file exports a tools array (definitions with name, description, input schema) and a handler function that routes calls to implementations. Tool names follow the pattern {protocol}_{action} — e.g. tsunami_swap_exact_input or tydro_supply. The dispatcher in index.ts matches by prefix and delegates to the right handler.",
+      "focusDirectory": "src/tools",
+      "colorMode": "fileTypes",
+      "highlightLayers": [
+        {
+          "id": "dex-tools",
+          "name": "DEX & Trading",
+          "color": "#8b5cf6",
+          "items": [
+            { "path": "src/tools/tsunami.ts", "type": "file" },
+            { "path": "src/tools/nado.ts", "type": "file" }
+          ],
+          "opacity": 0.8,
+          "renderStrategy": "border"
+        },
+        {
+          "id": "defi-tools",
+          "name": "DeFi Protocols",
+          "color": "#06b6d4",
+          "items": [
+            { "path": "src/tools/tydro.ts", "type": "file" },
+            { "path": "src/tools/sentry.ts", "type": "file" },
+            { "path": "src/tools/citadel.ts", "type": "file" }
+          ],
+          "opacity": 0.7,
+          "renderStrategy": "border"
+        },
+        {
+          "id": "utility-tools",
+          "name": "Utilities & Integrations",
+          "color": "#f97316",
+          "items": [
+            { "path": "src/tools/erc20.ts", "type": "file" },
+            { "path": "src/tools/zns.ts", "type": "file" },
+            { "path": "src/tools/subgraph.ts", "type": "file" },
+            { "path": "src/tools/relay.ts", "type": "file" }
+          ],
+          "opacity": 0.7,
+          "renderStrategy": "border"
+        }
+      ]
+    },
+    {
+      "id": "tsunami-deep-dive",
+      "title": "Tsunami V3 — The Core DEX (13 Tools)",
+      "description": "Tsunami V3 is the primary DEX — a concentrated liquidity AMM (Uniswap V3 fork) on Ink. Its 13 tools cover the full lifecycle: quoting swaps, executing exact-input/output swaps, creating pools, minting/managing LP positions, and collecting fees. This is the largest tool file (~650 lines) and demonstrates the core patterns: contract reads via publicClient, write operations with approval checks + encodeFunctionData + sendTx, and BigInt serialization for JSON responses.",
+      "focusDirectory": "src/tools",
+      "colorMode": "fileTypes",
+      "highlightLayers": [
+        {
+          "id": "tsunami-file",
+          "name": "Tsunami V3 DEX",
+          "color": "#3b82f6",
+          "items": [
+            { "path": "src/tools/tsunami.ts", "type": "file" }
+          ],
+          "opacity": 0.9,
+          "renderStrategy": "border"
+        }
+      ],
+      "interactiveActions": [
+        {
+          "type": "click-file",
+          "description": "Open tsunami.ts to see the tool pattern",
+          "target": "src/tools/tsunami.ts"
+        }
+      ]
+    },
+    {
+      "id": "nado-complexity",
+      "title": "NADO Perps — The Most Complex Protocol",
+      "description": "NADO is a perpetuals exchange built on Vertex Protocol, offering up to 20x leverage. It's the most complex tool file because orders use EIP-712 signing (not standard transactions), it has a dual-API architecture (Archive for reads, Gateway for writes), and handles subaccounts, product IDs, sequential nonces, and slow-mode withdrawals. Recent fixes (v1.9.1–v1.9.3) addressed nonce formats, deadline precision, and withdrawal modes — showing how protocol-specific edge cases drive development.",
+      "focusDirectory": "src/tools",
+      "colorMode": "fileTypes",
+      "highlightLayers": [
+        {
+          "id": "nado-file",
+          "name": "NADO Perps DEX",
+          "color": "#ef4444",
+          "items": [
+            { "path": "src/tools/nado.ts", "type": "file" }
+          ],
+          "opacity": 0.9,
+          "renderStrategy": "border"
+        }
+      ],
+      "interactiveActions": [
+        {
+          "type": "click-file",
+          "description": "Open nado.ts to see EIP-712 order signing",
+          "target": "src/tools/nado.ts"
+        }
+      ]
+    },
+    {
+      "id": "contract-abis",
+      "title": "Contract ABIs — Minimal & Focused",
+      "description": "The abis/ directory contains TypeScript-exported ABI arrays for each smart contract the server interacts with. These are intentionally minimal — only the functions and events actually used, not full contract ABIs. This keeps the bundle small and makes it clear which on-chain methods each protocol depends on. The Tsunami protocol has the most ABIs (5 files: Factory, Pool, PositionManager, Quoter, SwapRouter), reflecting its richer on-chain surface area.",
+      "focusDirectory": "src/abis",
+      "colorMode": "fileTypes",
+      "highlightLayers": [
+        {
+          "id": "tsunami-abis",
+          "name": "Tsunami V3 ABIs",
+          "color": "#3b82f6",
+          "items": [
+            { "path": "src/abis/TsunamiV3Factory.ts", "type": "file" },
+            { "path": "src/abis/TsunamiV3Pool.ts", "type": "file" },
+            { "path": "src/abis/TsunamiV3PositionManager.ts", "type": "file" },
+            { "path": "src/abis/TsunamiQuoterV2.ts", "type": "file" },
+            { "path": "src/abis/TsunamiSwapRouter02.ts", "type": "file" }
+          ],
+          "opacity": 0.7,
+          "renderStrategy": "border"
+        },
+        {
+          "id": "protocol-abis",
+          "name": "Protocol ABIs",
+          "color": "#10b981",
+          "items": [
+            { "path": "src/abis/ERC20.ts", "type": "file" },
+            { "path": "src/abis/Citadel.ts", "type": "file" },
+            { "path": "src/abis/SentryAgentLaunchFactory.ts", "type": "file" },
+            { "path": "src/abis/Tydro.ts", "type": "file" }
+          ],
+          "opacity": 0.7,
+          "renderStrategy": "border"
+        }
+      ]
+    },
+    {
+      "id": "documentation",
+      "title": "Documentation — Protocol Docs & Agent Skills",
+      "description": "The docs/ directory provides comprehensive protocol documentation and agent playbooks. Top-level markdown files explain each protocol's mechanics, supported assets, and contract details. The docs/skills/ subdirectory contains step-by-step playbooks that teach agents multi-step workflows — like launching a token, locking LP, collecting fees, and supplying to Tydro. These skills bridge the gap between individual tools and real DeFi strategies.",
+      "focusDirectory": "docs",
+      "colorMode": "fileTypes",
+      "highlightLayers": [
+        {
+          "id": "protocol-docs",
+          "name": "Protocol Documentation",
+          "color": "#f59e0b",
+          "items": [
+            { "path": "docs/tsunami-v3-dex.md", "type": "file" },
+            { "path": "docs/nado-perps-dex.md", "type": "file" },
+            { "path": "docs/tydro-lending.md", "type": "file" },
+            { "path": "docs/sentry-agent-launch-factory.md", "type": "file" }
+          ],
+          "opacity": 0.7,
+          "renderStrategy": "border"
+        },
+        {
+          "id": "skills-dir",
+          "name": "Agent Skills / Playbooks",
+          "color": "#ec4899",
+          "items": [
+            { "path": "docs/skills", "type": "directory" }
+          ],
+          "opacity": 0.8,
+          "renderStrategy": "border"
+        }
+      ]
+    },
+    {
+      "id": "git-activity",
+      "title": "Recent Development — Protocol Bug Fixes",
+      "description": "Recent commits (v1.9.1–v1.9.6) show the development pattern: protocol-specific bug fixes driven by real-world usage. ZNS fixes addressed SDK issues and contract parameter types. NADO fixes corrected order signing, nonce formats, and withdrawal modes. This is typical for MCP servers integrating multiple external protocols — the complexity isn't in the server architecture, it's in getting each protocol's quirks exactly right.",
+      "focusDirectory": "",
+      "colorMode": "git"
+    },
+    {
+      "id": "full-picture",
+      "title": "The Full Picture",
+      "description": "Moltiverse MCP is a clean, well-factored MCP server. The architecture is simple: index.ts dispatches to protocol handlers, each handler uses Viem clients from client.ts to interact with Ink L2 contracts. Key areas to explore: src/tools/ for the 68 tools, src/abis/ for contract interfaces, docs/ for protocol details, and docs/skills/ for multi-step agent workflows. To add a new protocol: create a tool file, add ABIs, register in index.ts, and document in docs/.",
+      "focusDirectory": "",
+      "colorMode": "fileTypes",
+      "highlightLayers": [
+        {
+          "id": "source-code",
+          "name": "Source Code",
+          "color": "#3b82f6",
+          "items": [
+            { "path": "src", "type": "directory" }
+          ],
+          "opacity": 0.6,
+          "renderStrategy": "border"
+        },
+        {
+          "id": "documentation-all",
+          "name": "Documentation",
+          "color": "#f59e0b",
+          "items": [
+            { "path": "docs", "type": "directory" }
+          ],
+          "opacity": 0.6,
+          "renderStrategy": "border"
+        },
+        {
+          "id": "config-files",
+          "name": "Configuration",
+          "color": "#10b981",
+          "items": [
+            { "path": "package.json", "type": "file" },
+            { "path": "tsconfig.json", "type": "file" }
+          ],
+          "opacity": 0.6,
+          "renderStrategy": "border"
+        }
+      ]
+    }
+  ]
+}
