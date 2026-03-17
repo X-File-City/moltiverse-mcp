@@ -100,7 +100,7 @@
     {
       "id": "tsunami-deep-dive",
       "title": "Tsunami V3 — The Core DEX (13 Tools)",
-      "description": "Tsunami V3 is the primary DEX — a concentrated liquidity AMM (Uniswap V3 fork) on Ink. Its 13 tools cover the full lifecycle: quoting swaps, executing exact-input/output swaps, creating pools, minting/managing LP positions, and collecting fees. This is the largest tool file (~650 lines) and demonstrates the core patterns: contract reads via publicClient, write operations with approval checks + encodeFunctionData + sendTx, and BigInt serialization for JSON responses.",
+      "description": "Tsunami V3 is the primary DEX — a concentrated liquidity AMM (Uniswap V3 fork) on Ink. Its 13 tools cover the full lifecycle: quoting swaps, executing exact-input/output swaps, creating pools, minting/managing LP positions, and collecting fees. This is the largest tool file and demonstrates the core patterns: contract reads via publicClient, write operations with approval checks + encodeFunctionData + sendTx, and BigInt serialization for JSON responses.",
       "focusDirectory": "src/tools",
       "colorMode": "fileTypes",
       "highlightLayers": [
