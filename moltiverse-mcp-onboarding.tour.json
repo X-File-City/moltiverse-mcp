@@ -220,7 +220,7 @@
     {
       "id": "git-activity",
       "title": "Recent Development — Protocol Bug Fixes",
-      "description": "Recent commits (v1.9.1–v1.9.6) show the development pattern: protocol-specific bug fixes driven by real-world usage. ZNS fixes addressed SDK issues and contract parameter types. NADO fixes corrected order signing, nonce formats, and withdrawal modes. This is typical for MCP servers integrating multiple external protocols — the complexity isn't in the server architecture, it's in getting each protocol's quirks exactly right.",
+      "description": "Recent commits show the development pattern: protocol-specific bug fixes driven by real-world usage. ZNS fixes addressed SDK issues and contract parameter types. NADO fixes corrected order signing, nonce formats, and withdrawal modes. This is typical for MCP servers integrating multiple external protocols — the complexity isn't in the server architecture, it's in getting each protocol's quirks exactly right.",
       "focusDirectory": "",
       "colorMode": "git"
     },
